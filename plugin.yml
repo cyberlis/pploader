@@ -1,0 +1,3 @@
+name: PPLoader
+main: org.cyberlis.pyloader.PythonLoader
+version: 0.1.0
