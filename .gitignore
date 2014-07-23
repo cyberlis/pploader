@@ -1,2 +1,7 @@
 *.pyc
 *.class
+# eclipse
+.classpath
+.project
+.settings/
+bin/
