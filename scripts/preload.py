@@ -1,9 +1,30 @@
 import org.cyberlis.pyloader.PythonPlugin as PythonPlugin
+import org.cyberlis.pyloader.PythonListener as _PythonListener
+from org.bukkit.event import EventPriority
 import sys
 import org.bukkit as bukkit
-from java.lang import Class
 from java.util.logging import Level
-from java.io import File
+
+def EventHandler(event, priority=EventPriority.NORMAL):
+    """Adds to PythonListener class methods fields _handlerType and 
+        _handlePriority    
+    """
+    def first_wrapper(method):
+        def second_wrapper(*args, **kwargs):
+            method(*args, **kwargs)
+        second_wrapper._handlerType = event
+        second_wrapper._handlePriority = priority
+        return second_wrapper
+    return first_wrapper
+
+class PythonListener(_PythonListener):
+    """ Event listener class. Modified __init__ for auto adding handlers
+        from local methods which was decorated by EventHandler
+    """
+    def __init__(self, *args, **kwargs):
+        for m in dir(self):
+            if hasattr(getattr(self, m), '_handlerType') and hasattr(getattr(self, m), '_handlePriority'):
+                self.addHandler(getattr(self, m), getattr(self, m)._handlerType, getattr(self, m)._handlePriority)
 
 class PyStdoutRedirect(object):
     def write(self, txt):
@@ -18,7 +39,7 @@ sys.stdout = PyStdoutRedirect()
 server = bukkit.Bukkit.getServer()
 
 class Log(object):
-    prefix = ""
+    prefix = "["+info.getName()+"]"
     logger = server.getLogger()
 
     @staticmethod

@@ -185,26 +185,6 @@ private boolean isEnabled = false;
             //this.classLoader = classLoader;
             this.config = YamlConfiguration.loadConfiguration(new File(dataFolder, "config.yml"));
 
-            /*if (description.isDatabaseEnabled()) {
-                ServerConfig db = new ServerConfig();
-
-                db.setDefaultServer(false);
-                db.setRegister(false);
-                db.setClasses(getDatabaseClasses());
-                db.setName(description.getName());
-                server.configureDbConfig(db);
-
-                DataSourceConfig ds = db.getDataSourceConfig();
-
-                ds.setUrl(replaceDatabaseString(ds.getUrl()));
-                getDataFolder().mkdirs();
-
-                ClassLoader previous = Thread.currentThread().getContextClassLoader();
-
-                Thread.currentThread().setContextClassLoader(classLoader);
-                ebean = EbeanServerFactory.create(db);
-                Thread.currentThread().setContextClassLoader(previous);
-            }*/
         }
     }
 
@@ -217,11 +197,6 @@ private boolean isEnabled = false;
         return new ArrayList<Class<?>>();
     }
 
-//    private String replaceDatabaseString(String input) {
-//        input = input.replaceAll("\\{DIR\\}", getDataFolder().getPath().replaceAll("\\\\", "/") + "/");
-//        input = input.replaceAll("\\{NAME\\}", getDescription().getName().replaceAll("[^\\w_-]", ""));
-//        return input;
-//    }
 
     /**
      * Gets the initialization status of this plugin
@@ -358,9 +333,7 @@ private boolean isEnabled = false;
                 }
                 out.close();
                 in.close();
-            } //  else {
-                 // Logger.getLogger(JavaPlugin.class.getName()).log(Level.WARNING, "Could not save " + outFile.getName() + " to " + outFile + " because " + outFile.getName() + " already exists.");
-             // }
+            } 
         } catch (IOException ex) {
             Logger.getLogger(JavaPlugin.class.getName()).log(Level.SEVERE, "Could not save " + outFile.getName() + " to " + outFile, ex);
         }

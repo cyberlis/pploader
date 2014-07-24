@@ -2,6 +2,7 @@
 *.class
 # eclipse
 .classpath
+.pydevproject
 .project
 .settings/
 bin/

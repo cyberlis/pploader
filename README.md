@@ -2,8 +2,8 @@ PPLoader - Python Plugin Loader
 ====================
 Forked from https://github.com/masteroftime/Python-Plugin-Loader
 
-Python plugin loader это загрузчик плагинов для bukkit, который позволяет
-загружать плагины написанные на jython. 
+PPLoader это загрузчик плагинов для bukkit, который позволяет загружать плагины 
+написанные на jython. 
 
 
 Использование загрузчика
@@ -115,17 +115,18 @@ Class (bukkit standard) API
 ---------------
 
 Главый класс должен быть унаследован от класса 
-org.cyberlis.pyloader.PythonPlugin. Так же он должен содержать методы onEnable
+org.cyberlis.pyloader.PythonPlugin (Его не нужно импортировать. По умолчанию 
+его импортирует scripts/preload.py). Так же он должен содержать методы onEnable
 и onDisable. Пример:
 
 plugin.py
 *********
+
     __plugin_name__ = "SamplePlugin"
     __plugin_version__ = "0.1-dev"
     __plugin_mainclass__ = "SampleClass"
     __plugin_website__ = "http://example.com/sampleplugin"
     
-    from org.cyberlis.pyloader import PythonPlugin
     
     class SampleClass(PythonPlugin):
         def onEnable(self):            
@@ -137,12 +138,14 @@ plugin.py
 Event Handlers (Обработчики событий)
 -----------------------------------
 
-Самая главная часть любого плагина. Вся логика обычно именно здесь.
-Создание Event Handlers немного отличается от стандартного java api
-Как и обычно необходимо создать Listener класс, но наследовать его надо от
-org.cyberlis.pyloader.PythonListener. После вызвать метод addHandler 
-экзэмпляра класса PythonListener и передать ему функции обработчика события,
-событие которое мы будем обрабатывать и его приоритет. Пример: 
+Обработчики событий cамая главная часть любого плагина. Вся логика 
+обычно именно здесь. Создание Event Handlers немного отличается от стандартного 
+java api. Как и обычно необходимо создать Listener класс, но наследовать его 
+надо от PythonListener (Его не нужно импортировать. По умолчанию его 
+импортирует и немного модифицирует scripts/preload.py). Методы Listener класса,
+котрые будут обрабатывать события, необходимо обернуть декоратором 
+@EventHandler, в который необходимо передать тип события и его приоритет. 
+Пример: 
 
 plugin.yml
 **********
@@ -157,31 +160,31 @@ plugin.yml
 
 plugin.py
 *********
+
     from org.bukkit.event import EventPriority
     from org.bukkit.event.server import ServerCommandEvent
-    from org.cyberlis.pyloader import PythonListener
 
+    class SimpleListener(PythonListener):
+        @EventHandler(ServerCommandEvent, EventPriority.NORMAL)
+        def onServerCommand(self, event):
+            print event.getCommand()  
+            
     class SampleClass(PythonPlugin):
-        def __init__(self):
-            print "sample plugin main class instantiated"
 
         def onEnable(self):
             pm = self.getServer().getPluginManager()
-            self.listener = PythonListener()
-            self.listener.addHandler(self.onServerCommand, ServerCommandEvent, EventPriority.NORMAL)
+            self.listener = SimpleListener()
             pm.registerEvents(self.listener, self)
-
             print "sample plugin enabled"
 
         def onDisable(self):
             print "sample plugin disabled"
 
         def onCommand(self, sender, command, label, args):
-            msg = "sample plugin command"
-            print sender.getName()
-            sender.sendMessage(msg)
-            return True
+            return False
 
         def onServerCommand(self, event):
             print event.getCommand()
+      
     print "sample plugin main file run"
+

@@ -121,7 +121,7 @@ public class PythonPluginLoader implements PluginLoader {
 
     @SuppressWarnings("unchecked")
     private Plugin loadPlugin(File file, boolean ignoreSoftDependencies, PluginDataFile data) throws InvalidPluginException/*, InvalidDescriptionException, UnknownDependencyException*/ {
-        System.out.println("[PythonLoader] Loading Plugin " + file.getName());
+        System.out.println("[PPLoader] Loading Plugin " + file.getName());
         PythonPlugin result = null;
         PluginDescriptionFile description = null;
         boolean hasyml = true;
@@ -139,7 +139,7 @@ public class PythonPluginLoader implements PluginLoader {
                 if (stripped == null)
                     //throw new BukkitScrewedUpException("This would only occur if bukkit called the loader on a plugin which does not match the loader's regex.");
                     throw new InvalidPluginException(new Exception("This shouldn't be happening; go tell whoever altered the plugin loading api in bukkit that they're whores."));
-                description = new PluginDescriptionFile(stripped, "dev", "plugin.py");
+                description = new PluginDescriptionFile(stripped, "dev", "Plugin");
             }
             if (stream != null)
                 stream.close();
@@ -195,15 +195,10 @@ public class PythonPluginLoader implements PluginLoader {
         }
 
 
-        String mainfile = description.getMain();
+        String mainfile = "plugin.py";
         InputStream instream = null;
         try {
             instream = data.getStream(mainfile);
-
-            if (instream == null) {
-                mainfile = "plugin.py";
-                instream = data.getStream(mainfile);
-            }
             if (instream == null) {
                 mainfile = "main.py";
                 instream = data.getStream(mainfile);
@@ -324,19 +319,6 @@ public class PythonPluginLoader implements PluginLoader {
         return fileFilters;
     }
 
-    /*public EventExecutor createExecutor(Type type, Listener listener) {
-        if (listener.getClass().equals(PythonListener.class)) { // 8 times faster than instanceof \o/
-            return new EventExecutor() {
-                public void execute(Listener listener, Event event) {
-                    ((PythonListener) listener).onEvent(event);
-                }
-            };
-        } else {
-            JavaPluginLoader jplugload = ReflectionHelper.getJavaPluginLoader(server.getPluginManager());
-            return jplugload.createExecutor(type, listener);
-        }
-    }*/
-
     public void disablePlugin(Plugin plugin) {
         if (!(plugin instanceof PythonPlugin)) {
             throw new IllegalArgumentException("Plugin is not associated with this PluginLoader");
@@ -344,7 +326,6 @@ public class PythonPluginLoader implements PluginLoader {
 
         if (plugin.isEnabled()) {
             PythonPlugin pyPlugin = (PythonPlugin) plugin;
-            //ClassLoader cloader = jPlugin.getClassLoader();
 
             try {
                 pyPlugin.setEnabled(false);
@@ -396,10 +377,9 @@ public class PythonPluginLoader implements PluginLoader {
             Listener listener, Plugin plugin) {
         boolean useTimings = server.getPluginManager().useTimings();
         Map<Class<? extends Event>, Set<RegisteredListener>> ret = new HashMap<Class<? extends Event>, Set<RegisteredListener>>();
-
-        if(!listener.getClass().equals(PythonListener.class)) {
-            throw new IllegalArgumentException("Listener to register is not a PythonListener");
-        }
+        /*if(!listener.getClass().equals(PythonListener.class) || !listener.getClass().isAssignableFrom(PythonListener.class)) {
+            throw new IllegalArgumentException("Listener to register is not a PythonListener or its subclass");
+        }*/
 
         PythonListener pyListener = (PythonListener)listener;
 
@@ -411,9 +391,9 @@ public class PythonPluginLoader implements PluginLoader {
 
                     @Override
                     public void execute(Listener listener, Event event) throws EventException {
-                        if(!listener.getClass().equals(PythonListener.class)) {
-                            throw new IllegalArgumentException("No PythonListener passed to EventExecutor! If this happens someone really fucked up something");
-                        }
+                        /*if(!listener.getClass().equals(PythonListener.class) || !listener.getClass().isAssignableFrom(PythonListener.class)) {
+                            throw new IllegalArgumentException("No PythonListener class or its subclass passed to EventExecutor!");
+                        }*/
                         ((PythonListener)listener).fireEvent(event, handler);
                     }
                 };
