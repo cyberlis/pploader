@@ -1,76 +1,92 @@
-PPLoader - Python Plugin Loader
+Python Plugin Loader
 ====================
-Forked from https://github.com/masteroftime/Python-Plugin-Loader
 
-PPLoader это загрузчик плагинов для bukkit, который позволяет загружать плагины 
-написанные на jython. 
+The python plugin loader is a pluginloader for bukkit to load python plugins
+via jython. 
 
 
-Использование загрузчика
+Using the plugin loader
 -----------------------
 
-Компилирование
+Building
 ********
 
 
-1. Создаем в Eclipse проект
-2. Импортируем исходники
-3. Экспортируем в jar файл
+1. Create project in Eclipse
+2. Import source code
+3. Export to jar and don't forget MANIFEST.MF
 
 
-Запуск
+Running
 *******
 
-1. Кладем pploader.jar в каталог bukkit/plugins/
-2. Кладем jython.jar вкаталог bukkit/lib/
-3. Запускаем сервер
+1. Put pploader.jar in your bukkit/plugins/ dir
+2. Put jython.jar in your bukkit/lib/ dir
+3. [Re-]Start bukkit
 
-Использование python плагинов
+Using plugins
 *************
 
-1. Закидываем .pyp или .zip или .py.dir в каталог bukkit/plugins/
-2. Запускаем сервак
+1. Stick the plugin.pyp or .zip or .py.dir in your bukkit/plugins/ dir
+2. [Re-]Start bukkit
 
-API
+
+
+API Details
 ===========
 
-Файлы плагинов
+The api contains quite a few places where you can do things multiple ways. This
+section documents these.
+
+Plugin files
 ------------
 
-Файлы плагинов написанные на python могут лежать:
+Your plugin may go in:
 
-- В zip файле имя которого кончается на .py.zip или .pyp
-- В каталоге имя которого заканчивается
-на .py.dir или \_py_dir (для windows)
-- В python файле (как обычно заканчивается на .py)
+- A zip whos name ends in either .py.zip or .pyp
+- A directory whose name ends in .py.dir or \_py_dir (for windows users)
+- A python file (obviously, named .py)
 
-Zipы лучше всего использовать с расширением .pyp Когда вы используете zip,
-необходимо объявить metadata;
+Zips with the .pyp extension are recommended if you release any plugins. When
+you use a zip, your must specify your own metadata; it will not allow guessed
+metadata.
 
-При использовании каталога или zip-файла, они должны содержать главный python 
-файл, который должен называться plugin.py, и необязательный (но желательный)
-файл plugin.yml содержащий metadata.
+When using a dir or a zip, your zip or dir must contain a main python file and
+optionally a plugin.yml containing metadata (see the following section). Your
+python main file normally should be named either plugin.py or main.py.
+plugin.py should generally be used when you are using the class api and main.py
+when using the decorator api. Under some conditions you may want to change the
+name of your main file (such as, other plugins needing to be able to import
+it). This is not recommended but is possible with the main field in the
+metadata.
 
-При использовании одиночного python файла .py в каталоге plugins, 
-каждый .py является главным файлом плагина.В этом случае у каждого плагина
-не может быть отдельного plugin.yml для metadata.
+When using a single .py file in plugins, your single .py is your main python
+file. You cannot have a separate plugin.yml - if you want to have any special
+metadata, you will need a directory or zip plugin.
 
-Metadata плагинов
+Plugin metadata
 ---------------
 
-Плагинам необходима metadata. Самый минимум metadata это имя плагина, версия 
-и главный класс.
+Plugins require metadata. The absolute minimum metadata is a name and a version.
+The location of your main file/class is also required, if you don't like
+defaults. The 'main' field of plugin metadata has special behavior:
 
-Существует три места где может храниться metadata. В порядке качества:
+- if the main is set in plugin.yml, it searches for the value set in main as
+   the main file before searching for the default file names. see "Main files".
+- the main is used to search for a main class before searching the default
+   class name.
+
+There are three places you can put this metadata. In order of quality:
 
 - plugin.yml
-- главный python файл
-- имя главного python файла
+- your main python file
+- your plugin filename
 
-plugin.yml самый лучший способ для указания metada. plugin.yml используется
-во все текущих плагинах на java. Только тут можно указать всю возможную 
-metadata. Тут можно указать команды права и прочее.
-Пример plugin.yml:
+plugin.yml is the best as you are able to set all metadata fields that exist
+in bukkit, and should be used for all plugins that you release. plugin.yml is
+used in all java plugins (as it is the only option for java plugins). as such,
+opening up java plugin jars is a good way to learn what can go in it. Here is
+an example of plugin.yml:
 
     name: SamplePlugin
     main: SampleClass
@@ -80,44 +96,49 @@ metadata. Тут можно указать команды права и проч
             description: send a sample message
             usage: /<command>
 
-Имя фала для получения metadata используется если не найден plugin.yml.
-Расширение главного файла убирается и имя файла используется для поля 'name'.
-Поле 'version' ставится равным 'dev'.
-Поле 'main' становится равным 'Plugin'
+The plugin filename is automatically used if no plugin.yml is found. The
+extension is removed from the filename and used as the "name" field.
+The version field is set to "dev" (as this case should only occur when first
+creating a plugin). the main field is set to a default value that has no
+effect.
 
-Главный python файл может быть использован для задания metada, тогда и только
-тогда, когда нет plugin.yml и нужно изменить значения по умолчанию 
-установленные из имени файла. Рекомендуется устанавливать эти значения в начале
-файла. Поля не являются обязательными. Пример:
+The plugin main python file can be used if (and only if) you do not have a
+plugin.yml file, so that you can override the defaults set by the plugin
+filename case. It is recommended that you set these values at the top of your
+main python file. None of these values are required. These are the values you
+can set:
 
     __plugin_name__ = "SamplePlugin"
     __plugin_version__ = "0.1-dev"
     __plugin_mainclass__ = "SampleClass"
     __plugin_website__ = "http://example.com/sampleplugin"
 
-Описание полей:
+note that plugin_mainclass can only be used to set the main class; it
+cannot be used to set the main python file, as it must be contained in the
+main python file. if you want to change the main python file, you must have a
+plugin.yml.
 
-- "main" - имя главного класса.
-- "name" - имя плагина, которое используется в bukkit. Например при вводе
-    комынды /plugins
-- "version" - версия плагина. Используется bukkit при отображении ошибок.
-- "website" - сайт. для людей которые просматривают код
+Summary of fields:
 
+- "main" - name of main python file or name of main class
+- "name" - name of plugin to show in /plugins list and such. used to name the
+   config directory. for this reason it must not equal the full name of the
+   plugin file.
+- "version" - version of plugin. shown in errors, and other plugins can access it
+- "website" - mainly for people reading the code
 
 Class (bukkit standard) API
----------------------------------
+---------------------------
 
-Разработка плагинов с помощью Class API идентична, разработке на java.
-Можно уверенно использовать документацию по разработки java плагинов просто
-переводя код в python. Далее будут описаны исключения и особенности.
+To write a plugin with this api is almost identical to writing one in java, so
+much so that you can safely use the documentation on how to write a java
+plugin; simply translate it into python. the java2py tool may even work on
+existing java plugins (though no promises).
 
-Главный класс
----------------
-
-Главый класс должен быть унаследован от класса 
-org.cyberlis.pyloader.PythonPlugin (Его не нужно импортировать. По умолчанию 
-его импортирует scripts/preload.py). Так же он должен содержать методы onEnable
-и onDisable. Пример:
+If your plugin is a single file it must contain metada and main class.
+Main class have to be extended from PythonPlugin class. (You don't have to 
+import it, because it is auto imported on plugin startup by scripts/preload.py 
+in pploader.jar). Your main class must have onEnable and onDisable method.
 
 plugin.py
 *********
@@ -135,17 +156,18 @@ plugin.py
         def onDisable(self):
             print "sample plugin disabled"
             
+
 Event Handlers (Обработчики событий)
 -----------------------------------
 
-Обработчики событий cамая главная часть любого плагина. Вся логика 
+Event Handlers is the main part of any plugin. Вся логика 
 обычно именно здесь. Создание Event Handlers немного отличается от стандартного 
-java api. Как и обычно необходимо создать Listener класс, но наследовать его 
-надо от PythonListener (Его не нужно импортировать. По умолчанию его 
-импортирует и немного модифицирует scripts/preload.py). Методы Listener класса,
-котрые будут обрабатывать события, необходимо обернуть декоратором 
-@EventHandler, в который необходимо передать тип события и его приоритет. 
-Пример: 
+java api. As usual you must create Listener class, but extend it from 
+PythonListener class. (You don't have to import it, because it is auto imported 
+on plugin startup by scripts/preload.py in pploader.jar). Methods of Listener
+class which will be event handlers must be decorated with EventHandler. You 
+must pass EventType and EventPriority to EventHandler decorator. 
+Example: 
 
 plugin.yml
 **********
@@ -187,4 +209,3 @@ plugin.py
             print event.getCommand()
       
     print "sample plugin main file run"
-
