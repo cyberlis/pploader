@@ -1,3 +1,9 @@
 name: PPLoader
 main: org.cyberlis.pyloader.PythonLoader
 version: 0.1.0
+commands:
+  pploader:
+    description: Load, unload or reload the specified python plugins.
+    usage: |
+      /<command> ACTION PYTHON_PLUGIN
+      Available actions: load, unload, reload

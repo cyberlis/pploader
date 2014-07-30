@@ -187,11 +187,12 @@ public class PythonPluginLoader implements PluginLoader {
         PyList pythonpath = Py.getSystemState().path;
         PyString filepath = new PyString(file.getAbsolutePath());
         if (data.shouldAddPathEntry()) {
-            if (pythonpath.__contains__(filepath)) {
-                throw new InvalidPluginException(new Exception("path " + filepath
-                        + " already on pythonpath!")); //can't imagine how this would happen, but better safe than sorry
+            if (!pythonpath.__contains__(filepath)) {
+              //  throw new InvalidPluginException(new Exception("path " + filepath
+              //          + " already on pythonpath!")); //can't imagine how this would happen, but better safe than sorry
+            	pythonpath.append(filepath);
             }
-            pythonpath.append(filepath);
+            
         }
 
 

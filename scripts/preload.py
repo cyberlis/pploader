@@ -1,9 +1,11 @@
-import org.cyberlis.pyloader.PythonPlugin as PythonPlugin
-import org.cyberlis.pyloader.PythonListener as _PythonListener
-from org.bukkit.event import EventPriority
 import sys
+
+from org.bukkit.event import EventPriority
 import org.bukkit as bukkit
 from java.util.logging import Level
+
+import org.cyberlis.pyloader.PythonPlugin as PythonPlugin
+import org.cyberlis.pyloader.PythonListener as _PythonListener
 
 def EventHandler(event, priority=EventPriority.NORMAL):
     """Adds to PythonListener class methods fields _handlerType and 
