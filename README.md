@@ -1,4 +1,4 @@
-Python Plugin Loader
+PPLoader - Python Plugin Loader
 ====================
 
 The python plugin loader is a pluginloader for bukkit to load python plugins
