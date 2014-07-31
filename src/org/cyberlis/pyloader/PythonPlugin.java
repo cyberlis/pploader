@@ -28,10 +28,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginLogger;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.python.core.PyException;
-import org.python.core.PyFunction;
-import org.python.core.PyObject;
-import org.python.core.PyString;
+import org.python.core.*;
 import org.python.util.PythonInterpreter;
 
 import com.avaje.ebean.EbeanServer;
@@ -297,7 +294,6 @@ private boolean isEnabled = false;
             dataFile.reload();
             return dataFile.getStream(filename);
         } catch (IOException e) {
-            //just return null and do not print stack trace as JavaPlugin's getResource does not print it either
             return null;
         }
     }
@@ -375,80 +371,6 @@ private boolean isEnabled = false;
 
     @Override
     public String getName() {
-        // TODO Auto-generated method stub
         return "PythonPlugin";
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd,
-            String alias, String[] args) {
-        return null;
-    }
-    @SuppressWarnings("unchecked")
-    public void addCommandInfo(String name, String usage, String desc, List aliases) {
-        Object object = description.getCommands();
-        if (object == null) {
-            object = new HashMap<String, HashMap<String, Object>>();
-            try {
-                ReflectionHelper.setPrivateValue(description, "commands", object);
-            } catch (Throwable t) {
-                t.printStackTrace();
-                throw new PyException(new PyString("error"), new PyString("Plugin commands list does not exist"));
-            }
-        }
-
-        Map<String, Map<String, Object>> map = (Map<String, Map<String, Object>>) object;
-
-        if (map.containsKey(name)) {
-            if (desc != null || usage != null || aliases != null)
-                throw new PyException(new PyString("error"), new PyString("Plugin already has a command called '"+name+"'"));
-            else
-                return;
-        }
-
-        Map<String, Object> commandmap = new HashMap<String, Object>();
-        if (desc != null)
-            commandmap.put("description", desc);
-        if (usage != null)
-            commandmap.put("usage", usage);
-        if (aliases != null)
-            commandmap.put("aliases", aliases);
-        map.put(name, commandmap);
-    }
-    
-    
-    /**
-     * Register a command with no extra metadata
-     * @param func function to set as handler
-     * @param name name to register
-     */
-    public void registerCommand(PyObject func, String name) {
-        registerCommand(func, name, null, null, null, null);
-    }
-
-    /**
-     * Register a command with no extra metadata
-     * @param func function to set as handler; function's name is used as command name
-     */
-    public void registerCommand(PyObject func) {
-        registerCommand(func, null);
-    }
-
-
-    /**
-     * Register a command with no extra metadata
-     * @param func function to set as handler
-     * @param name name to use
-     * @param usage metadata
-     * @param desc metadata
-     * @param aliases metadata
-     */
-    public void registerCommand(PyObject func, String name, String usage, String desc, List<?> aliases, PyObject tabComplete) {
-        String finalname = name;
-        if (finalname == null)
-            finalname = ((PyFunction)func).__name__;
-        addCommandInfo(finalname, usage, desc, aliases);
-        PythonCommandHandler handler = new PythonCommandHandler(func, finalname, tabComplete);
-        handler.register(this);
     }
 }

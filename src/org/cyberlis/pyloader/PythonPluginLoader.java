@@ -35,10 +35,7 @@ import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.TimedRegisteredListener;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPluginLoader;
-import org.python.core.Py;
-import org.python.core.PyList;
-import org.python.core.PyObject;
-import org.python.core.PyString;
+import org.python.core.*;
 import org.python.util.PythonInterpreter;
 import org.yaml.snakeyaml.error.YAMLException;
 
@@ -66,7 +63,6 @@ public class PythonPluginLoader implements PluginLoader {
             Pattern.compile("^(.*)_py_dir$"),
             Pattern.compile("^(.*)\\.py\\.zip$"),
             Pattern.compile("^(.*)\\.pyp$"),
-            Pattern.compile("^(.*)\\.py$"),
         };
 
     private HashSet<String> loadedplugins = new HashSet<String>();
@@ -92,11 +88,7 @@ public class PythonPluginLoader implements PluginLoader {
 
         PluginDataFile data = null;
 
-        if (file.getName().endsWith(".py")) {
-            if (file.isDirectory())
-                throw new InvalidPluginException(new Exception("python files cannot be directories! try .py.dir instead."));
-            data = new PluginPythonFile(file);
-        } else if (file.getName().endsWith("dir")) {
+        if (file.getName().endsWith("dir")) {
             if (!file.isDirectory())
                 throw new InvalidPluginException(new Exception("python directories cannot be normal files! try .py or .py.zip instead."));
             data = new PluginPythonDirectory(file);
@@ -128,19 +120,10 @@ public class PythonPluginLoader implements PluginLoader {
         boolean hassolidmeta = false; // whether we have coder-set metadata. true for have set metadata, false for inferred metadata.
         try {
             InputStream stream = data.getStream("plugin.yml");
-            if (stream == null)
-                hasyml = false;
-
-            if (hasyml) {
-                description = new PluginDescriptionFile(stream);
-                hassolidmeta = true;
-            } else {
-                String stripped = stripExtension(file.getName());
-                if (stripped == null)
-                    //throw new BukkitScrewedUpException("This would only occur if bukkit called the loader on a plugin which does not match the loader's regex.");
-                    throw new InvalidPluginException(new Exception("This shouldn't be happening; go tell whoever altered the plugin loading api in bukkit that they're whores."));
-                description = new PluginDescriptionFile(stripped, "dev", "Plugin");
+            if (stream == null){
+                throw new InvalidPluginException(new Exception("You must include plugin.yml!"));
             }
+            description = new PluginDescriptionFile(stream);
             if (stream != null)
                 stream.close();
         } catch (IOException ex) {
@@ -183,17 +166,10 @@ public class PythonPluginLoader implements PluginLoader {
                 throw new UnknownDependencyException(pluginName);
             }
         }
-
-        PyList pythonpath = Py.getSystemState().path;
+        PySystemState state = new PySystemState();
+        PyList pythonpath = state.path;
         PyString filepath = new PyString(file.getAbsolutePath());
-        if (data.shouldAddPathEntry()) {
-            if (!pythonpath.__contains__(filepath)) {
-              //  throw new InvalidPluginException(new Exception("path " + filepath
-              //          + " already on pythonpath!")); //can't imagine how this would happen, but better safe than sorry
-            	pythonpath.append(filepath);
-            }
-            
-        }
+    	pythonpath.append(filepath);
 
 
         String mainfile = "plugin.py";
@@ -209,19 +185,12 @@ public class PythonPluginLoader implements PluginLoader {
         }
 
         if (instream == null) {
-            throw new InvalidPluginException(new FileNotFoundException("Data file does not contain "+mainfile));
+            throw new InvalidPluginException(new FileNotFoundException("Can not find plugin.py or main.py"));
         }
         try {
-
-            PythonInterpreter interp = new PythonInterpreter();
-            interp.set("info", description);
+            PyDictionary table = new PyDictionary();
+            PythonInterpreter interp = new PythonInterpreter(table, state);
             
-            // Decorator Enhancements
-            interp.exec("import __builtin__");
-            interp.exec("__builtin__.info = info");
-            
-            // Hardcoded for now, may be worth thinking about generalizing it as sort of "addons" for the PythonPluginLoader
-            // Could be used to extend the capabilities of python plugins the same way the metaclass decorators do, without requiring any changes to the PythonPluginLoader itself
             String[] pre_plugin_scripts = {"preload.py"};
             String[] post_plugin_scripts = {"postload.py"};
             
@@ -236,34 +205,17 @@ public class PythonPluginLoader implements PluginLoader {
 
             instream.close();
 
-            try {
-                if (!hasyml) {
-                    Object name = interp.get("__plugin_name__");
-                    Object version = interp.get("__plugin_version__");
-                    Object website = interp.get("__plugin_website__");
-                    Object main = interp.get("__plugin_mainclass__");
-                    hassolidmeta = name != null && version != null;
-                    if (name != null)
-                        ReflectionHelper.setPrivateValue(description, "name", name.toString());
-                    if (version != null)
-                        ReflectionHelper.setPrivateValue(description, "version", version.toString());
-                    if (website != null)
-                        ReflectionHelper.setPrivateValue(description, "website", website.toString());
-                    if (main != null)
-                        ReflectionHelper.setPrivateValue(description, "main", main.toString());
-                }
-            } catch (Throwable t) {
-                Logger.getLogger("Minecraft").log(Level.SEVERE, "Error while setting python-set description values", t);
-            }
-
             String mainclass = description.getMain();
             PyObject pyClass = interp.get(mainclass);
             if (pyClass == null)
                 pyClass = interp.get("Plugin");
+                if(pyClass == null){
+                    throw new InvalidPluginException(new Exception("Can not find Mainclass."));
+                }
             else
                 result = (PythonPlugin) pyClass.__call__().__tojava__(PythonPlugin.class);
             
-            interp.set("pyplugin", result);
+            interp.set("PYPLUGIN", result);
             
             result.interp = interp;
             
@@ -278,34 +230,12 @@ public class PythonPluginLoader implements PluginLoader {
             result.setDataFile(data);
             
         } catch (Throwable t) {
-            if (data.shouldAddPathEntry() && pythonpath.__contains__(filepath)) {
-                pythonpath.remove(filepath);
-            }
             throw new InvalidPluginException(t);
-        }
-
-        if (data.getNeedsSolidMeta() && !hassolidmeta) {
-            throw new InvalidPluginException(new Exception("Released plugins require either a plugin.yml or both __plugin_name__ and __plugin_version__ set in the main python file!"));
         }
 
         if (!loadedplugins.contains(description.getName()))
             loadedplugins.add(description.getName());
         return result;
-    }
-
-    /**
-     * Remove the extension for use in an automatic plugin name
-     * @param toStrip filename to strip
-     * @return stripped file name or null if not changed
-     */
-    private String stripExtension(String toStrip) {
-        for (Pattern p : fileFilters) {
-            Matcher m = p.matcher(toStrip);
-            if (m.matches()) {
-                return m.group(1);
-            }
-        }
-        return null;
     }
 
     private boolean isPluginLoaded(String name) {
@@ -378,10 +308,6 @@ public class PythonPluginLoader implements PluginLoader {
             Listener listener, Plugin plugin) {
         boolean useTimings = server.getPluginManager().useTimings();
         Map<Class<? extends Event>, Set<RegisteredListener>> ret = new HashMap<Class<? extends Event>, Set<RegisteredListener>>();
-        /*if(!listener.getClass().equals(PythonListener.class) || !listener.getClass().isAssignableFrom(PythonListener.class)) {
-            throw new IllegalArgumentException("Listener to register is not a PythonListener or its subclass");
-        }*/
-
         PythonListener pyListener = (PythonListener)listener;
 
         for(Map.Entry<Class<? extends Event>, Set<PythonEventHandler>> entry : pyListener.handlers.entrySet()) {
@@ -392,9 +318,6 @@ public class PythonPluginLoader implements PluginLoader {
 
                     @Override
                     public void execute(Listener listener, Event event) throws EventException {
-                        /*if(!listener.getClass().equals(PythonListener.class) || !listener.getClass().isAssignableFrom(PythonListener.class)) {
-                            throw new IllegalArgumentException("No PythonListener class or its subclass passed to EventExecutor!");
-                        }*/
                         ((PythonListener)listener).fireEvent(event, handler);
                     }
                 };
@@ -418,14 +341,9 @@ public class PythonPluginLoader implements PluginLoader {
         InputStream stream = null;
         PluginDataFile data = null;
 
-        if (file.getName().endsWith(".py")) {
-            if (file.isDirectory())
-                //cause we can't throw InvalidPluginExceptions from here we throw an InvalidDescriptionExecption with the InvalidPlugin as cause
-                throw new InvalidDescriptionException(new InvalidPluginException(new Exception("python files cannot be directories! try .py.dir instead.")));
-            data = new PluginPythonFile(file);
-        } else if (file.getName().endsWith("dir")) {
+        if (file.getName().endsWith("dir")) {
             if (!file.isDirectory())
-                throw new InvalidDescriptionException(new InvalidPluginException(new Exception("python directories cannot be normal files! try .py or .py.zip instead.")));
+                throw new InvalidDescriptionException(new InvalidPluginException(new Exception("python directories cannot be normal files! .pyp or .py.zip instead.")));
             data = new PluginPythonDirectory(file);
         } else if (file.getName().endsWith("zip") || file.getName().endsWith("pyp")) {
             if (file.isDirectory())
@@ -436,7 +354,7 @@ public class PythonPluginLoader implements PluginLoader {
                 throw new InvalidDescriptionException(ex);
             }
         } else {
-            throw new InvalidDescriptionException(new InvalidPluginException(new Exception("filename '"+file.getName()+"' does not end in py, dir, zip, or pyp! did you add a regex without altering loadPlugin()?")));
+            throw new InvalidDescriptionException(new InvalidPluginException(new Exception("filename '"+file.getName()+"' does not end in dir, zip, or pyp! did you add a regex without altering loadPlugin()?")));
         }
 
         try {
@@ -444,7 +362,7 @@ public class PythonPluginLoader implements PluginLoader {
 
             if(stream == null) {
                 //TODO Does this cause serious problems with plugins which have no plugin.yml file?
-                throw new InvalidDescriptionException(new InvalidPluginException(new FileNotFoundException("Jar does not contain plugin.yml")));
+                throw new InvalidDescriptionException(new InvalidPluginException(new FileNotFoundException("Plugin does not contain plugin.yml")));
             }
 
             return new PluginDescriptionFile(stream);

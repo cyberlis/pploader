@@ -53,59 +53,10 @@ public class PythonLoader extends JavaPlugin {
     public void onLoad() {
         //check if jython.jar exists if not try to download
         if(!new File("lib/jython.jar").exists()) {
-            getServer().getLogger().log(Level.SEVERE, "Could not find lib/jython.jar! I will try to automatically download it for you.");
-            try {
-                URL website = new URL("http://rccraft.ru/dwn/jython.jar");
-                URLConnection connection = website.openConnection();
-                connection.connect();
-
-                //create lib folder if it doesn't exist
-                File lib = new File("lib");
-                if(!lib.exists()) {
-                    lib.mkdir();
-                }
-
-                //delete temporary _dl file if it already exists
-                File dl_file = new File("lib/jython.jar_dl");
-                if(dl_file.exists()) {
-                    dl_file.delete();
-                }
-
-                InputStream in = connection.getInputStream();
-                FileOutputStream out = new FileOutputStream(dl_file);
-
-                long total = connection.getContentLengthLong();
-                long progress = 0;
-                byte[] buffer = new byte[1024];
-                int read;
-                long start = System.currentTimeMillis();
-
-                while((read = in.read(buffer)) != -1) {
-                    out.write(buffer, 0, read);
-                    progress += read;
-                    if(System.currentTimeMillis() - start > 2000) {
-                        System.out.println("Downloading Jython: " + (progress*100/total) + " %");
-                        start = System.currentTimeMillis();
-                    }
-                }
-
-                out.close();
-                in.close();
-
-                dl_file.renameTo(new File("lib/jython.jar"));
-                getServer().getLogger().log(Level.INFO, "Download successful!");
-                getServer().getLogger().log(Level.INFO, "YOU MUST RESTART YOUR SERVER NOW!");
-                return;
-            } catch (IOException e) {
-                getServer().getLogger().log(Level.SEVERE, "Error while downloading jython.jar, loading of python plugins will fail! Please download jython from http://dev.bukkit.org/media/files/647/602/jython.jar and place it in the lib folder");
-                e.printStackTrace();
-            }
-            
-            
+            getServer().getLogger().log(Level.SEVERE, "Could not find lib/jython.jar!");
+            return;           
         }
 
-        //System.out.println("PythonLoader: initializing");
-        // This must occur as early as possible, and only once.
         pm = Bukkit.getServer().getPluginManager();
         boolean needsload = true;
 
@@ -119,9 +70,7 @@ public class PythonLoader extends JavaPlugin {
         }
 
         if (needsload) {
-            //System.out.println("PythonLoader: loading into bukkit");
             pm.registerInterface(PythonPluginLoader.class);
-            //pm.loadPlugins(this.getFile().getParentFile()); //TODO Check weather this reloads java plugins which were already loaded
 
             for (File file : this.getFile().getParentFile().listFiles()) {
                 for (Pattern filter : PythonPluginLoader.fileFilters) {
@@ -130,13 +79,10 @@ public class PythonLoader extends JavaPlugin {
                         try {
                             pm.loadPlugin(file);
                         } catch (InvalidPluginException e) {
-                            // TODO Auto-generated catch block
                             e.printStackTrace();
                         } catch (InvalidDescriptionException e) {
-                            // TODO Auto-generated catch block
                             e.printStackTrace();
                         } catch (UnknownDependencyException e) {
-                            // TODO Auto-generated catch block
                             e.printStackTrace();
                         }
                     }
