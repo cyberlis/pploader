@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.Validate;
@@ -34,8 +32,14 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.TimedRegisteredListener;
 import org.bukkit.plugin.UnknownDependencyException;
-import org.bukkit.plugin.java.JavaPluginLoader;
-import org.python.core.*;
+import org.cyberlis.dataloaders.PluginDataFile;
+import org.cyberlis.dataloaders.PluginPythonDirectory;
+import org.cyberlis.dataloaders.PluginPythonZip;
+import org.python.core.PyDictionary;
+import org.python.core.PyList;
+import org.python.core.PyObject;
+import org.python.core.PyString;
+import org.python.core.PySystemState;
 import org.python.util.PythonInterpreter;
 import org.yaml.snakeyaml.error.YAMLException;
 
@@ -44,6 +48,7 @@ import org.yaml.snakeyaml.error.YAMLException;
  *
  * @author masteroftime
  * @author lahwran
+ * @author cyberlis
  */
 public class PythonPluginLoader implements PluginLoader {
 
@@ -111,13 +116,10 @@ public class PythonPluginLoader implements PluginLoader {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private Plugin loadPlugin(File file, boolean ignoreSoftDependencies, PluginDataFile data) throws InvalidPluginException/*, InvalidDescriptionException, UnknownDependencyException*/ {
         System.out.println("[PPLoader] Loading Plugin " + file.getName());
         PythonPlugin result = null;
         PluginDescriptionFile description = null;
-        boolean hasyml = true;
-        boolean hassolidmeta = false; // whether we have coder-set metadata. true for have set metadata, false for inferred metadata.
         try {
             InputStream stream = data.getStream("plugin.yml");
             if (stream == null){

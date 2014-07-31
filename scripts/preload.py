@@ -41,7 +41,7 @@ sys.stdout = PyStdoutRedirect()
 server = bukkit.Bukkit.getServer()
 
 class Log(object):
-    prefix = "["+info.getName()+"]"
+    prefix = ""
     logger = server.getLogger()
 
     @staticmethod

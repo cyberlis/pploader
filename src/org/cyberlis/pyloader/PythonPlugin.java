@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,7 +26,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginLogger;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.python.core.*;
+import org.cyberlis.dataloaders.PluginDataFile;
 import org.python.util.PythonInterpreter;
 
 import com.avaje.ebean.EbeanServer;
@@ -37,7 +35,7 @@ import com.avaje.ebeaninternal.server.ddl.DdlGenerator;
 
 /**
  * @author lahwran
- *
+ * @author cyberlis
  */
 public class PythonPlugin implements Plugin {
 private boolean isEnabled = false;
@@ -372,5 +370,12 @@ private boolean isEnabled = false;
     @Override
     public String getName() {
         return "PythonPlugin";
+    }
+    
+    
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command cmd,
+            String alias, String[] args) {
+        return null;
     }
 }

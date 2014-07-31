@@ -1,12 +1,7 @@
 package org.cyberlis.pyloader;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
@@ -30,8 +24,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import sun.rmi.log.ReliableLog.LogFile;
 
 /**
  * Java plugin to initialize python plugin loader and provide it with a little moral boost.
