@@ -170,9 +170,9 @@ public class PythonPluginLoader implements PluginLoader {
         List<String> depend;
 
         try {
-            depend = (List<String>) description.getDepend();
+            depend = description.getDepend();
             if (depend == null) {
-                depend = new ArrayList<String>();
+                depend = new ArrayList<>();
             }
         } catch (ClassCastException ex) {
             throw new InvalidPluginException(ex);
