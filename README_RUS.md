@@ -165,7 +165,7 @@ plugin.py
     from org.bukkit.event.server import ServerCommandEvent
 
     class SimpleListener(PythonListener):
-        @EventHandler(ServerCommandEvent, EventPriority.NORMAL)
+        @PythonEventHandler(ServerCommandEvent, EventPriority.NORMAL)
         def onServerCommand(self, event):
             print event.getCommand()  
             
