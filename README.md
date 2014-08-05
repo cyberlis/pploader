@@ -8,15 +8,6 @@ via jython.
 Using the plugin loader
 -----------------------
 
-Building
-********
-
-
-1. Create project in Eclipse
-2. Import source code
-3. Export to jar and don't forget MANIFEST.MF
-
-
 Running
 *******
 
