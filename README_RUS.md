@@ -144,7 +144,7 @@ java api. Как и обычно необходимо создать Listener к
 надо от PythonListener (Его не нужно импортировать. По умолчанию его 
 импортирует и немного модифицирует scripts/preload.py). Методы Listener класса,
 котрые будут обрабатывать события, необходимо обернуть декоратором 
-@EventHandler, в который необходимо передать тип события и его приоритет. 
+@PythonEventHandler, в который необходимо передать тип события и его приоритет. 
 Пример: 
 
 plugin.yml
@@ -165,7 +165,7 @@ plugin.py
     from org.bukkit.event.server import ServerCommandEvent
 
     class SimpleListener(PythonListener):
-        @EventHandler(ServerCommandEvent, EventPriority.NORMAL)
+        @PythonEventHandler(ServerCommandEvent, EventPriority.NORMAL)
         def onServerCommand(self, event):
             print event.getCommand()  
             
