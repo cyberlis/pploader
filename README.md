@@ -165,8 +165,8 @@ Event Handlers is the main part of any plugin. Вся логика
 java api. As usual you must create Listener class, but extend it from 
 PythonListener class. (You don't have to import it, because it is auto imported 
 on plugin startup by scripts/preload.py in pploader.jar). Methods of Listener
-class which will be event handlers must be decorated with EventHandler. You 
-must pass EventType and EventPriority to EventHandler decorator. 
+class which will be event handlers must be decorated with PythonEventHandler. 
+You must pass EventType and EventPriority to PythonEventHandler decorator. 
 Example: 
 
 plugin.yml
@@ -187,7 +187,7 @@ plugin.py
     from org.bukkit.event.server import ServerCommandEvent
 
     class SimpleListener(PythonListener):
-        @EventHandler(ServerCommandEvent, EventPriority.NORMAL)
+        @PythonEventHandler(ServerCommandEvent, EventPriority.NORMAL)
         def onServerCommand(self, event):
             print event.getCommand()  
             
