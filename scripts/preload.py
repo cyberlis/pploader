@@ -7,7 +7,7 @@ from java.util.logging import Level
 import org.cyberlis.pyloader.PythonPlugin as PythonPlugin
 import org.cyberlis.pyloader.PythonListener as _PythonListener
 
-def EventHandler(event, priority=EventPriority.NORMAL):
+def PythonEventHandler(event, priority=EventPriority.NORMAL):
     """Adds to PythonListener class methods fields _handlerType and 
         _handlePriority    
     """
