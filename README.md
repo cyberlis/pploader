@@ -161,8 +161,5 @@ plugin.py
 
         def onCommand(self, sender, command, label, args):
             return False
-
-        def onServerCommand(self, event):
-            print event.getCommand()
       
     print "sample plugin main file run"
