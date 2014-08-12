@@ -113,7 +113,7 @@ plugin.py
             print "sample plugin disabled"
             
 
-Event Handlers (Обработчики событий)
+Event Handlers
 -----------------------------------
 
 Event Handlers is the main part of any plugin. Вся логика 
@@ -138,17 +138,16 @@ plugin.yml
 
 plugin.py
 *********
-
     from org.bukkit.event import EventPriority
-    from org.bukkit.event.server import ServerCommandEvent
+    from org.bukkit.event.player import PlayerJoinEvent
 
     class SimpleListener(PythonListener):
-        @PythonEventHandler(ServerCommandEvent, EventPriority.NORMAL)
-        def onServerCommand(self, event):
-            print event.getCommand()  
+
+        @PythonEventHandler(PlayerJoinEvent, EventPriority.NORMAL)
+        def onPlayerJoin(self, event):
+            event.getPlayer().sendMessage('Wellcome to rccraft server')
             
     class SampleClass(PythonPlugin):
-
         def onEnable(self):
             pm = self.getServer().getPluginManager()
             self.listener = SimpleListener()
@@ -160,5 +159,3 @@ plugin.py
 
         def onCommand(self, sender, command, label, args):
             return False
-      
-    print "sample plugin main file run"
