@@ -49,9 +49,8 @@ plugin.py should generally be used when you are using the class api and main.py
 Plugin metadata
 ---------------
 
-Plugins require metadata. The absolute minimum metadata is a name and a version.
-The location of your main file/class is also required, if you don't like
-defaults. The 'main' field of plugin metadata has special behavior:
+Plugins require metadata. The absolute minimum metadata is a name version and main class.
+The 'main' field of plugin metadata has special behavior:
 
 - the main is used to search for a main class before searching the default
    class name.
@@ -59,8 +58,9 @@ defaults. The 'main' field of plugin metadata has special behavior:
 plugin.yml is able to set all metadata fields that exist
 in bukkit, and should be used for all plugins that you release. plugin.yml is
 used in all java plugins (as it is the only option for java plugins). as such,
-opening up java plugin jars is a good way to learn what can go in it. Here is
-an example of plugin.yml:
+opening up java plugin jars is a good way to learn what can go in it. 
+Or you can read about it here http://wiki.bukkit.org/Plugin_YAML
+Here isan example of plugin.yml:
 
     name: SamplePlugin
     main: SampleClass
@@ -87,7 +87,6 @@ much so that you can safely use the documentation on how to write a java
 plugin; simply translate it into python. the java2py tool may even work on
 existing java plugins (though no promises).
 
-If your plugin is a single file it must contain metada and main class.
 Main class have to be extended from PythonPlugin class. (You don't have to 
 import it, because it is auto imported on plugin startup by scripts/preload.py 
 in pploader.jar). Your main class must have onEnable and onDisable method.
