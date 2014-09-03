@@ -18,7 +18,7 @@ Running
 Using plugins
 *************
 
-1. Stick the plugin.pyp or .zip or .py.dir in your bukkit/plugins/ dir
+1. Stick the plugin.pyp or .py.zip or .py.dir in your bukkit/plugins/ dir
 2. [Re-]Start bukkit
 
 
