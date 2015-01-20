@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -102,11 +103,11 @@ public class PythonPluginLoader implements PluginLoader {
 
         PluginDataFile data = null;
 
-        if (file.getName().endsWith("dir")) {
+        if (file.getName().endsWith(".dir") || file.getName().endsWith("_dir")) {
             if (!file.isDirectory())
                 throw new InvalidPluginException(new Exception("python directories cannot be normal files! try .py or .py.zip instead."));
             data = new PluginPythonDirectory(file);
-        } else if (file.getName().endsWith("zip") || file.getName().endsWith("pyp")) {
+        } else if (file.getName().endsWith(".zip") || file.getName().endsWith(".pyp")) {
             if (file.isDirectory())
                 throw new InvalidPluginException(new Exception("python zips cannot be directories! try .py.dir instead."));
             data = new PluginPythonZip(file);
@@ -124,9 +125,23 @@ public class PythonPluginLoader implements PluginLoader {
             }
         }
     }
+    
+    private Properties setDefaultPythonPath(Properties props, String file_path) {
+        String pythonPathProp = props.getProperty("python.path");
+        String new_value;
+        if (pythonPathProp==null)
+        {
+            new_value  = file_path;
+        } else {
+            new_value = pythonPathProp +java.io.File.pathSeparator + file_path + java.io.File.pathSeparator;
+        }
+        props.setProperty("python.path",new_value);
+        return props;
+    }
 
     private Plugin loadPlugin(File file, boolean ignoreSoftDependencies, PluginDataFile data) throws InvalidPluginException/*, InvalidDescriptionException, UnknownDependencyException*/ {
-        System.out.println("[PPLoader] Loading Plugin " + file.getName());
+        Properties props;
+    	System.out.println("[PPLoader] Loading Plugin " + file.getName());
         PythonPlugin result = null;
         PluginDescriptionFile description = null;
         try {
@@ -177,7 +192,11 @@ public class PythonPluginLoader implements PluginLoader {
                 throw new UnknownDependencyException(pluginName);
             }
         }
+        props = PySystemState.getBaseProperties();
+        props = setDefaultPythonPath(props, file.getAbsolutePath());
+        
         PySystemState state = new PySystemState();
+        state.initialize(System.getProperties(), props, null);
         PyList pythonpath = state.path;
         PyString filepath = new PyString(file.getAbsolutePath());
     	pythonpath.append(filepath);
@@ -352,11 +371,11 @@ public class PythonPluginLoader implements PluginLoader {
         InputStream stream = null;
         PluginDataFile data = null;
 
-        if (file.getName().endsWith("dir")) {
+        if (file.getName().endsWith(".dir") || file.getName().endsWith("_dir")) {
             if (!file.isDirectory())
                 throw new InvalidDescriptionException(new InvalidPluginException(new Exception("python directories cannot be normal files! .pyp or .py.zip instead.")));
             data = new PluginPythonDirectory(file);
-        } else if (file.getName().endsWith("zip") || file.getName().endsWith("pyp")) {
+        } else if (file.getName().endsWith(".zip") || file.getName().endsWith(".pyp")) {
             if (file.isDirectory())
                 throw new InvalidDescriptionException(new InvalidPluginException(new Exception("python zips cannot be directories! try .py.dir instead.")));
             try {
